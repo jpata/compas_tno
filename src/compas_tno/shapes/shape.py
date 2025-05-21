@@ -489,6 +489,162 @@ class Shape(Datastructure):
         return cls().from_library(data)
 
     @classmethod
+    def create_flatter_crossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, 
+                                      desired_max_rise=None, t=0.0, discretisation=[100, 100],
+                                      spr_angle=0.0): # spr_angle might be unused or reinterpreted for simplicity
+            """Create the shape representing a flatter Crossvault.
+
+            The height of the vault is controlled by `desired_max_rise`.
+
+            Parameters
+            ----------
+            xy_span : [list[float], list[float]], optional
+                xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+            thk : float, optional
+                The thickness of the vault, by default 0.5
+            desired_max_rise : float, optional
+                The desired maximum height of the vault at its crown.
+                If None, it defaults to a standard proportion (e.g., min_span / 2 for a rounded vault,
+                or you can define a flatter default like min_span / 3).
+                By default None.
+            t : float, optional
+                Parameter for lower bound z-coordinate at the springing line or boundary vertices,
+                typically 0.0 if springing from z=0. By default 0.0.
+            discretisation : list|int, optional
+                Level of discretisation for generating the mesh surfaces, by default [100, 100].
+            spr_angle : float, optional
+                Springing angle. For this flatter cross vault, we'll assume it primarily affects
+                the base height or is handled by ensuring z_coords >= 0. Default is 0.0.
+
+            Returns
+            -------
+            shape : Shape
+                The shape object of the flatter cross vault.
+            """
+            from compas_tno.shapes.crossvault import flatter_crossvault_heightfields # New function
+
+            shape = cls()
+            
+            # If desired_max_rise is not provided, set a default (e.g., span/3 or span/2 for standard)
+            span_x = xy_span[0][1] - xy_span[0][0]
+            span_y = xy_span[1][1] - xy_span[1][0]
+            if desired_max_rise is None:
+                # Default to a somewhat flat vault, e.g., 1/3 of the smaller span
+                # Or, to mimic the original more closely if it's semi-circular: min(span_x, span_y) / 2.0
+                desired_max_rise = min(span_x, span_y) / 3.0 
+                print(f"Warning: 'desired_max_rise' not provided. Defaulting to {desired_max_rise:.2f}")
+            
+            # Store relevant data for the shape
+            data = {
+                'type': 'flatter_crossvault', # New type
+                'thk': thk,
+                'discretisation': discretisation,
+                'xy_span': xy_span,
+                'desired_max_rise': desired_max_rise,
+                'spr_angle': spr_angle, # May or may not be fully utilized in flatter_crossvault_heightfields
+                't': t
+            }
+
+            intrados, extrados, middle = flatter_crossvault_heightfields(
+                xy_span=xy_span,
+                thk=thk,
+                desired_max_rise=desired_max_rise,
+                t=t,
+                discretisation=discretisation,
+                spr_angle=spr_angle # Pass it along
+            )
+
+            shape.datashape = data
+            shape.intrados = intrados
+            shape.extrados = extrados
+            shape.middle = middle
+
+            if middle:
+                shape.area = middle.area()
+            shape.volume = shape.compute_volume() # This will need careful check if middle surface is complex
+            shape.total_selfweight = shape.compute_selfweight()
+
+            return shape
+
+    @classmethod
+    def create_flatter_crossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.50, 
+                                      desired_max_rise=None, t=0.0, discretisation=[100, 100],
+                                      spr_angle=0.0): # spr_angle might be unused or reinterpreted for simplicity
+            """Create the shape representing a flatter Crossvault.
+
+            The height of the vault is controlled by `desired_max_rise`.
+
+            Parameters
+            ----------
+            xy_span : [list[float], list[float]], optional
+                xy-span of the shape, by default [[0.0, 10.0], [0.0, 10.0]]
+            thk : float, optional
+                The thickness of the vault, by default 0.5
+            desired_max_rise : float, optional
+                The desired maximum height of the vault at its crown.
+                If None, it defaults to a standard proportion (e.g., min_span / 2 for a rounded vault,
+                or you can define a flatter default like min_span / 3).
+                By default None.
+            t : float, optional
+                Parameter for lower bound z-coordinate at the springing line or boundary vertices,
+                typically 0.0 if springing from z=0. By default 0.0.
+            discretisation : list|int, optional
+                Level of discretisation for generating the mesh surfaces, by default [100, 100].
+            spr_angle : float, optional
+                Springing angle. For this flatter cross vault, we'll assume it primarily affects
+                the base height or is handled by ensuring z_coords >= 0. Default is 0.0.
+
+            Returns
+            -------
+            shape : Shape
+                The shape object of the flatter cross vault.
+            """
+            from compas_tno.shapes.crossvault import flatter_crossvault_heightfields # New function
+
+            shape = cls()
+            
+            # If desired_max_rise is not provided, set a default (e.g., span/3 or span/2 for standard)
+            span_x = xy_span[0][1] - xy_span[0][0]
+            span_y = xy_span[1][1] - xy_span[1][0]
+            if desired_max_rise is None:
+                # Default to a somewhat flat vault, e.g., 1/3 of the smaller span
+                # Or, to mimic the original more closely if it's semi-circular: min(span_x, span_y) / 2.0
+                desired_max_rise = min(span_x, span_y) / 3.0 
+                print(f"Warning: 'desired_max_rise' not provided. Defaulting to {desired_max_rise:.2f}")
+            
+            # Store relevant data for the shape
+            data = {
+                'type': 'flatter_crossvault', # New type
+                'thk': thk,
+                'discretisation': discretisation,
+                'xy_span': xy_span,
+                'desired_max_rise': desired_max_rise,
+                'spr_angle': spr_angle, # May or may not be fully utilized in flatter_crossvault_heightfields
+                't': t
+            }
+
+            intrados, extrados, middle = flatter_crossvault_heightfields(
+                xy_span=xy_span,
+                thk=thk,
+                desired_max_rise=desired_max_rise,
+                t=t,
+                discretisation=discretisation,
+                spr_angle=spr_angle # Pass it along
+            )
+
+            shape.datashape = data
+            shape.intrados = intrados
+            shape.extrados = extrados
+            shape.middle = middle
+
+            if middle:
+                shape.area = middle.area()
+            shape.volume = shape.compute_volume() # This will need careful check if middle surface is complex
+            shape.total_selfweight = shape.compute_selfweight()
+
+            return shape
+
+    @classmethod
     def create_pointedcrossvault(cls, xy_span=[[0.0, 10.0], [0.0, 10.0]], thk=0.5, discretisation=[10, 10], hc=8.0, he=None, hm=None,  t=0.0):
         """Create the shape representing a Pointed Crossvault
 

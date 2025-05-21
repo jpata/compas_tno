@@ -5,6 +5,7 @@ from compas_tno.shapes.dome import dome_zt_update
 
 from compas_tno.shapes.crossvault import crossvault_ub_lb_update
 from compas_tno.shapes.crossvault import crossvault_middle_update
+from compas_tno.shapes.crossvault import flatter_crossvault_ub_lb_update # Added for flatter cross vault
 
 from compas_tno.shapes.pointed_crossvault import pointed_vault_ub_lb_update
 from compas_tno.shapes.pointed_crossvault import pointed_vault_middle_update
@@ -83,6 +84,16 @@ def apply_envelope_from_shape(form, shape):
         zub, zlb = dome_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['center'], shape.datashape['radius'])
     elif shape.datashape['type'] == 'crossvault':
         zub, zlb = crossvault_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['xy_span'])
+    elif shape.datashape['type'] == 'flatter_crossvault': # New condition for flatter_crossvault
+        zub, zlb = flatter_crossvault_ub_lb_update(
+            x, y,
+            shape.datashape['thk'],
+            shape.datashape['t'],
+            shape.datashape['xy_span'],
+            shape.datashape['desired_max_rise'],
+            shape.datashape.get('spr_angle', 0.0), # Use .get() for optional parameters
+            shape.datashape.get('tol', 1e-6)       # Use .get() for optional parameters
+        )
     elif shape.datashape['type'] == 'pointed_crossvault':
         zub, zlb = pointed_vault_ub_lb_update(x, y, shape.datashape['thk'], shape.datashape['t'], shape.datashape['xy_span'], hc=shape.datashape['hc'],
                                               he=shape.datashape['he'], hm=shape.datashape['hm'])

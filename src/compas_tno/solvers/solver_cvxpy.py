@@ -130,7 +130,7 @@ def call_and_output_CVXPY(form, problem, printout=False):
         print('fopt (lp) : {0:.3f}'.format(fopt))
         print('n-iter    : {0}'.format(niter))
         print('q range   : {0:.3f} : {1:.3f}'.format(min(qopt), max(qopt)))
-        print('sol. time : {0:.3f} sec'.format(sol_time))
+        # print('sol. time : {0:.3f} sec'.format(sol_time))
         print('-' * 50 + '\n')
 
     return problem
@@ -213,7 +213,7 @@ def call_cvxpy(problem, printout=False):
     constraints = [horz, pos, maxq]
 
     prob = Problem(objective, constraints)
-    prob.solve(solver='MOSEK', verbose=printout)
+    prob.solve(solver='CLARABEL', verbose=printout)
     # prob.solve(solver='MOSEK', verbose=True)
 
     # save output
