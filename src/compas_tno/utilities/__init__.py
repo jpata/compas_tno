@@ -248,7 +248,8 @@ from .data_analysis import (
     interpolate_min_thk,
     filter_min_thk,
     lookup_folder,
-    save_pointcloud
+    save_pointcloud,
+    export_thrust_network_to_json
 )
 
 
@@ -339,4 +340,5 @@ __all__ = [
     'filter_min_thk',
     'lookup_folder',
     'save_pointcloud',
+    'export_thrust_network_to_json'
 ]

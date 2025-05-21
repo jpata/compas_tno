@@ -5,6 +5,8 @@ from numpy import append
 from numpy import linspace
 
 from compas.geometry import intersection_line_line_xy
+from compas_tno.diagrams import FormDiagram
+from compas.data import json_dump
 
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
@@ -26,7 +28,8 @@ __all__ = [
     'interpolate_min_thk',
     'filter_min_thk',
     'lookup_folder',
-    'save_pointcloud'
+    'save_pointcloud',
+    'export_thrust_network_to_json'
 ]
 
 
@@ -782,6 +785,89 @@ def save_pointcloud(points_lb, points_ub, json_path):
         json.dump(data, outfile)
 
     return
+
+
+def export_thrust_network_to_json(form_diagram, filepath, indent=None):
+    """
+    Exports the geometry and attributes of a thrust network (FormDiagram) to a JSON file.
+
+    The FormDiagram object contains all vertex coordinates (x, y, z), edge connectivity,
+    and any associated attributes like force densities (q), forces (f),
+    upper/lower bounds (ub, lb), applied loads (px, py, pz), etc.
+    This function serializes this entire structure.
+
+    Parameters
+    ----------
+    form_diagram : compas_tno.diagrams.FormDiagram
+        The FormDiagram object representing the thrust network.
+        This object should be the result of a TNO analysis or setup.
+    filepath : str
+        The full path (including filename and .json extension) where the JSON file will be saved.
+        Example: "/path/to/output/thrust_network_solution.json"
+    indent : int, optional
+        If not None, will pretty-print the JSON output with the given indent level,
+        making the file more human-readable. Default is None (compact JSON).
+
+    Returns
+    -------
+    bool
+        True if the export was successful, False otherwise.
+
+    Raises
+    ------
+    TypeError
+        If the input `form_diagram` is not an instance of `compas_tno.diagrams.FormDiagram`.
+    IOError
+        If there's an issue writing the file (e.g., permissions, disk full).
+    Exception
+        For any other unexpected errors during the export process.
+
+    Examples
+    --------
+    >>> from compas_tno.diagrams import FormDiagram
+    >>> from compas_tno.utilities import export_thrust_network_to_json
+    >>> # Assume 'my_optimized_form' is a FormDiagram object from a TNO analysis
+    >>> my_optimized_form = FormDiagram.from_obj(compas.get('lines.obj')) # Example placeholder
+    >>> # ... (populate my_optimized_form with data from an analysis) ...
+    >>> filepath = "path/to/my_thrust_network.json"
+    >>> success = export_thrust_network_to_json(my_optimized_form, filepath, indent=2)
+    >>> if success:
+    >>>     print(f"Successfully exported to {filepath}")
+    """
+    # Check if the input is a FormDiagram instance
+    if not isinstance(form_diagram, FormDiagram):
+        raise TypeError(f"Input must be a compas_tno.diagrams.FormDiagram object. Got {type(form_diagram)} instead.")
+
+    # Use the to_data() method to get a serializable dictionary
+    # This method is part of the compas.datastructures.Datastructure base class
+    try:
+        data_to_export = form_diagram.to_data()
+    except Exception as e:
+        print(f"Error during data serialization of the FormDiagram: {e}")
+        return False
+
+    # Ensure the directory for the filepath exists
+    directory = os.path.dirname(filepath)
+    if directory and not os.path.exists(directory):
+        try:
+            os.makedirs(directory)
+            print(f"Created directory: {directory}")
+        except OSError as e:
+            print(f"Error creating directory {directory}: {e}")
+            return False
+    
+    # Write the data to the JSON file
+    try:
+        with open(filepath, 'w') as f:
+            json_dump(data_to_export, f)
+        print(f"Thrust network data successfully exported to: {filepath}")
+        return True
+    except IOError as e:
+        print(f"IOError writing to file {filepath}: {e}")
+        return False
+    except Exception as e:
+        print(f"An unexpected error occurred while writing JSON to {filepath}: {e}")
+        return False
 
 
 # def prune_data(sizes, solutions):
